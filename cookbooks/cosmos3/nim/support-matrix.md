@@ -23,6 +23,7 @@ visible host.
 | Runtime | Model | Supported use | Automatic precision behavior |
 | --- | --- | --- | --- |
 | Generator | `nano` | General-purpose Generator tasks included by the image | Prefer FP8 when compatible; otherwise fall back |
+| Generator | `edge-droid` | DROID policy with action-only output | BF16 only |
 | Generator | `nano-droid` | DROID policy with action-only output | BF16 only |
 | Generator | `super` | General-purpose Generator tasks included by the image | Prefer FP8 when compatible; otherwise fall back |
 | Generator | `super-t2i` | Full-step T2I only | Prefer FP8 when compatible; otherwise fall back |
@@ -30,13 +31,14 @@ visible host.
 | Generator | `super-i2v` | Full-step I2V only | Prefer FP8 when compatible; otherwise fall back |
 | Generator | `super-i2v-4step` | Four-step I2V only | Prefer FP8 when compatible; otherwise fall back |
 | Reasoner | `nano` | Image/video reasoning | Prefer BF16 on compute capability 8.0 through 8.8, FP8 on 8.9 through 9.x, and NVFP4 on 10.0 or newer when compatible |
+| Reasoner | `edge` | Image/video reasoning and streaming | BF16 or FP8; no NVFP4 profile |
 | Reasoner | `super` | Image/video reasoning | Prefer BF16 on compute capability 8.0 through 8.8, FP8 on 8.9 through 9.x, and NVFP4 on 10.0 or newer when compatible |
 
 A Generator specialist rejects requests for other tasks. Confirm that
 the selected image includes the model before deployment.
 
-Nano and Super Reasoner profiles include variant-specific DFlash drafts and use
-them by default. Set `NIM_USE_DFLASH=0` to run either target model without
+Edge, Nano, and Super Reasoner profiles include variant-specific DFlash drafts and use
+them by default. Set `NIM_USE_DFLASH=0` to run the selected target model without
 speculative decoding. Generator does not support DFlash.
 
 ### Practical model recommendation
@@ -229,6 +231,7 @@ only to the general-purpose `nano` and `super` variants.
 | Variant group | Precision | Model offload | Guardrails during diffusion | GPUs | Generation minimum VRAM/device | Host RAM guidance | Transfer minimum VRAM/device |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: |
 | `nano` | BF16 | None | Resident | 1, 2, 4, 8 | 58 GiB | 40 GiB | 64 GiB |
+| `edge-droid` | BF16 | None | Resident | 1, 2, 4, 8 | 15 GiB profile floor | Validate on host | Not supported |
 | `nano` | BF16 | Layer | Offloaded | 1 | 31 GiB | 64 GiB | 35 GiB |
 | `nano` | FP8 | None | Resident | 1, 2, 4, 8 | 44 GiB | 40 GiB | 50 GiB |
 | `nano` | FP8 | Model | Resident | 1 | 38 GiB | 64 GiB | 44 GiB |
@@ -273,6 +276,8 @@ Reasoner does not use Generator latency/throughput or model-offload selectors:
 | Model | Precision | GPUs | Tensor parallelism | Minimum VRAM/device | Practical host RAM minimum | Minimum compute capability |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | `nano` | BF16 | 1 | 1 | 23.1 GiB | 24 GiB | 8.0 |
+| `edge` | BF16 | 1 | 1 | 12 GiB profile floor | Validate on host | 8.0 |
+| `edge` | FP8 | 1 | 1 | 12 GiB profile floor | Validate on host | 8.9 |
 | `nano` | FP8 | 1 | 1 | 23.1 GiB | 18 GiB | 8.9 |
 | `nano` | NVFP4 | 1 | 1 | 23.1 GiB | 18 GiB | 10.0 |
 | `super` | BF16 | 1 | 1 | 135 GiB | 76 GiB | 8.0 |
@@ -280,8 +285,13 @@ Reasoner does not use Generator latency/throughput or model-offload selectors:
 | `super` | FP8 | 1 | 1 | 67 GiB | 46 GiB | 8.9 |
 | `super` | NVFP4 | 1 | 1 | 73 GiB | 36 GiB | 10.0 |
 
-The Reasoner values are empirical practical host RAM requirements on a
-discrete-GPU host. The embedded profile tags deliberately check only 16 GiB of
+Edge rows are profile-selection floors, not measured workload requirements.
+Confirm the Edge rows and system-memory admission tags in the image manifest;
+size host RAM and GPU headroom for the actual context, media, and concurrency.
+Edge-DROID supports policy only, and Edge Reasoner supports BF16/FP8 only.
+
+The Nano/Super Reasoner values are empirical practical host RAM requirements on a
+discrete-GPU host. The Nano/Super release profile tags deliberately check only 16 GiB of
 system memory so an operator can attempt startup; that admission floor is not
 the practical requirement for a running NIM. Unified-memory systems continue
 to use the shared-pool guidance above without a separate host RAM requirement.

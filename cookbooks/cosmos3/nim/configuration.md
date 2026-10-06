@@ -22,13 +22,14 @@ complete Docker commands.
 | Name | Default | Use |
 | --- | --- | --- |
 | `NIM_MODEL_TYPE` | `generator` | Select `generator` or `reasoner` |
-| `NIM_MODEL_VARIANT` | `nano` preference | Select `nano` or `super` for either runtime; Generator also accepts `nano-droid`, `super-t2i`, `super-t2i-4step`, `super-i2v`, and `super-i2v-4step` |
+| `NIM_MODEL_VARIANT` | `nano` preference | Reasoner: `edge`, `nano`, or `super`. Generator: `nano`, `super`, `edge-droid`, `nano-droid`, `super-t2i`, `super-t2i-4step`, `super-i2v`, or `super-i2v-4step` |
 | `NIM_PRECISION` | Generator: FP8 preference; Reasoner: GPU-derived preference | Optionally pin a precision available in the selected image; when omitted, Reasoner prefers BF16 on compute capability 8.0 through 8.8, FP8 on 8.9 through 9.x, and NVFP4 on 10.0 or newer when compatible |
 | `NIM_PERF_PROFILE` | `latency` | Generator only: choose `latency` or `throughput` |
 
 `NIM_MODEL_VARIANT` selects the checkpoint contract for either runtime.
-Reasoner accepts `nano` or `super` and does not use `NIM_PERF_PROFILE`.
-Nano-DROID currently has BF16 profiles only.
+Reasoner accepts `edge`, `nano`, or `super` and does not use `NIM_PERF_PROFILE`.
+Edge Reasoner has BF16 and FP8 profiles; Edge-DROID and Nano-DROID have BF16
+profiles only. General-purpose Edge generation is unsupported.
 
 The NIM chooses the best compatible profile for these settings and the visible
 GPUs. A normal deployment does not need a profile ID.
@@ -38,7 +39,7 @@ GPUs. A normal deployment does not need a profile ID.
 | Name | Default | Use |
 | --- | --- | --- |
 | `NIM_MODEL_PATH` | Empty | Generator: absolute local directory. Reasoner: absolute local directory or `hf://owner/repository[:revision]` |
-| `NIM_DFLASH_MODEL_PATH` | Empty | Nano or Super Reasoner: independently override the DFlash draft with an absolute local directory |
+| `NIM_DFLASH_MODEL_PATH` | Empty | Edge, Nano, or Super Reasoner: independently override the DFlash draft with an absolute local directory |
 | `NIM_DISABLE_MODEL_DOWNLOAD` | `false` | Disable profile download for a completely local Reasoner override; incompatible with Reasoner `hf://` and rejected for Generator |
 | `HF_TOKEN` | Empty | Authenticate to a private Reasoner Hugging Face repository |
 
@@ -94,6 +95,7 @@ guidance](transfer.md#run-the-examples).
 | --- | --- | --- |
 | `NIM_ENABLE_WARMUP` | `false` | Run synthetic inference before readiness |
 | `NIM_ENABLE_TORCH_COMPILE` | `true` | Enable the Generator compilation path |
+| `NIM_CACHE_BACKEND` | Edge-DROID: `none`; other Generator variants: `sea_cache` | Generator diffusion cache; set `none` to disable SeaCache for uncached experiments |
 | `NIM_LINEAR_BACKEND` | Quantized profiles: `cutlass`; BF16: unset | Select `auto`, `cutlass`, `flashinfer_cutlass`, `flashinfer_cutedsl`, or `torch` for quantized Generator DiT linear layers |
 | `NIM_TRITON_LOG_VERBOSE` | `0` | Increase Generator backend logging during diagnosis |
 | `NIM_MAX_SEQUENCE_LENGTH` | `5120` | Set the startup prompt-token sequence length |
@@ -154,12 +156,12 @@ controls one at a time and validate memory, latency, quality, and correctness.
 
 | Name | Default | Use |
 | --- | --- | --- |
-| `NIM_USE_DFLASH` | `true` for Reasoner | Use the bundled Nano or Super DFlash draft; set `false` to run the target model without speculative decoding |
+| `NIM_USE_DFLASH` | `true` for Reasoner | Use the bundled Edge, Nano, or Super DFlash draft; set `false` to run the target model without speculative decoding |
 | `NIM_DFLASH_MODEL_PATH` | Empty | Use an independent absolute local DFlash directory containing `config.json` and `model.safetensors` |
 | `NIM_DFLASH_BF16_KV_CACHE` | `false` on Hopper; `true` otherwise | Override whether DFlash uses a BF16 KV cache instead of the profile-derived cache dtype |
 | `NIM_DFLASH_CONFIG` | Empty object | Add or override advanced vLLM DFlash speculative-configuration fields as JSON |
 
-DFlash does not change the Reasoner request API. Nano and Super Reasoner
+DFlash does not change the Reasoner request API. Edge, Nano, and Super Reasoner
 profiles include variant-specific drafts and enable them by default; Generator
 rejects an explicit DFlash enable. Confirm that the selected image contains the
 draft artifact. `NIM_DFLASH_MODEL_PATH` accepts only an absolute local path,

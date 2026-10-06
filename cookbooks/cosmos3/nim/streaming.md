@@ -9,6 +9,10 @@ time, and receives a complete text reply for each frame. The server retains a
 bounded history for context and releases older state as the session advances.
 It does not accept an MP4 file or a camera URL as a frame.
 
+Edge Reasoner supports these same WebSocket and REST clients in BF16 or FP8.
+Choose `NIM_MODEL_VARIANT=edge` and `NIM_USE_DFLASH=0` before launch; the client
+discovers the active model, so no model-ID edit is needed.
+
 Use **WebSocket** for a live feed: one connection owns one session, and
 disconnecting releases its resources. REST provides the same session behavior
 for clients that cannot maintain a WebSocket connection.
