@@ -29,9 +29,13 @@ checks only the shared frontend's `/health`, `/v1/models`, and
 Standalone NIM mode retains its readiness, runtime metadata, and selected-profile
 checks.
 
-For Nano and Super streaming, n-gram speculative decoding replaces DFlash because
-DFlash is currently not supported for streaming. Edge does not support DFlash in
-this version and runs without speculative decoding with `NIM_USE_DFLASH=0`.
+Edge does not support DFlash in this version. Set `NIM_USE_DFLASH=0` and
+`NIM_STREAMING_SPEC_METHOD=none` to run Edge without speculative decoding.
+For Dynamo Edge workers, use the same settings; see the
+[Edge deployment settings](dynamo/dynamo_with_streaming.md#use-edge-reasoner).
+Nano and Super streaming default to DFlash when enabled; use
+`NIM_STREAMING_SPEC_METHOD=ngram` for GPU n-gram speculation or `none` to disable
+speculation. See [advanced streaming controls](configuration.md#advanced-streaming-controls).
 
 ## Example client
 

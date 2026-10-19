@@ -255,15 +255,16 @@ Leave these at their defaults unless diagnosing or tuning a measured workload:
 
 | Name | Default | Use |
 | --- | --- | --- |
-| `NIM_STREAMING_SPEC_METHOD` | `ngram` | Replace configured DFlash speculation with GPU n-gram speculation; `none` disables speculation. The `dflash` override is for diagnostics only and is unsupported for streaming |
+| `NIM_STREAMING_SPEC_METHOD` | `dflash` when DFlash is enabled; `none` otherwise | Select `dflash`, GPU n-gram speculation (`ngram`), or `none`. Set `none` for Edge |
 | `NIM_STREAMING_SPEC_NUM_TOKENS` | `3` | Number of proposed tokens for the n-gram replacement; values below 1 become 1, and non-integer values fall back to 3 |
 | `NIM_STREAMING_FORCE_V1_RUNNER` | Unset | Set `1` to force the vLLM V1 model runner; otherwise leave runner selection to vLLM |
 
-For Nano and Super, the speculation controls apply only when streaming is enabled and the engine
-has a DFlash speculative configuration. They do not independently enable
-speculation when `NIM_USE_DFLASH=false`. N-gram replaces DFlash because DFlash
-is currently not supported for streaming. Edge runs without speculative decoding
-with `NIM_USE_DFLASH=0`. Both V1 and V2 model runners support the
+The speculation controls apply when streaming is enabled. An explicit
+`NIM_STREAMING_SPEC_METHOD` takes precedence over `NIM_USE_DFLASH`. With the
+method unset, `NIM_USE_DFLASH=0` disables speculation in updated images; set
+`NIM_STREAMING_SPEC_METHOD=none` explicitly for Edge to also cover older images
+that default streaming to DFlash. DFlash is available only for Nano and Super.
+Both V1 and V2 model runners support the
 streaming path, so pinning V1 is not required for normal operation.
 
 Inspect `GET /v1/streaming/config` for the served model and default retention
