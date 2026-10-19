@@ -203,7 +203,7 @@ systems](deployment.md#set-the-reasoner-memory-share-on-unified-memory-systems).
 | `NIM_MAX_VIDEOS_PER_PROMPT` | Unset | Optionally set a nonnegative video limit; when unset, do not override the runtime limit |
 | `NIM_MEDIA_IO_KWARGS` | Video backend `pynvvc` | Replace the complete operator-level media I/O object with a JSON object |
 | `NIM_MM_PROCESSOR_KWARGS` | Unset | Set operator-level multimodal processor options as a JSON object |
-| `NIM_VIDEO_PRUNING_RATE` | `0` (disabled) | Set video-token pruning from 0 through 1; values greater than 0 enable pruning |
+| `NIM_VIDEO_PRUNING_RATE` | `0.6` | Set video-token pruning from 0 through 1; `0`, `none`, `null`, or an empty value disable pruning |
 | `NIM_VIDEO_PRUNING_METHOD` | `vidcom2` | Select `vidcom2` or `evs` when pruning is enabled |
 
 Prefer request-level `media_io_kwargs` for one workload rather than changing the
@@ -266,11 +266,11 @@ is currently not supported for streaming. Edge runs without speculative decoding
 with `NIM_USE_DFLASH=0`. Both V1 and V2 model runners support the
 streaming path, so pinning V1 is not required for normal operation.
 
-For standalone NIM, inspect `GET /v1/streaming/config` for the served model and default retention
-and sampling policy. See [Streaming](streaming.md) for session requests,
-the example client, and error handling. That config route and the example
-client are unavailable in Dynamo mode; use the
-[Dynamo REST examples](dynamo/dynamo_with_streaming.md#stream-video-frames-over-rest).
+Inspect `GET /v1/streaming/config` for the served model and default retention
+and sampling policy. Standalone NIM and the Dynamo streaming adapter expose
+this route. See [Streaming](streaming.md) for session requests and error handling,
+and [Dynamo REST streaming](dynamo/dynamo_with_streaming.md#stream-video-frames-over-rest)
+for the client's shared-frontend checks, which require no worker URLs or metadata.
 
 ### API behavior
 
@@ -297,6 +297,7 @@ or a GPU.
 | --- | --- | --- |
 | `NIM_DYNAMO_WORKER` | `false` | Launch the Reasoner as a Dynamo worker instead of the standalone Reasoner runtime |
 | `NIM_DISCOVERY_BACKEND` | `file` | Set worker and private-frontend discovery; use `kubernetes` for the supplied Kubernetes deployments. Also accepts the legacy JSON argument object shown below |
+| `DYN_NAMESPACE_PREFIX` | From the `nvidia.com/dynamo-namespace` pod label in the supplied YAML | Let the private frontend discover operator-suffixed worker namespaces; takes precedence over the exact `DYN_NAMESPACE` filter |
 | `NIM_DYNAMO_ASYNC_SCHEDULING` | `true` | Control worker asynchronous scheduling; streaming forces this off |
 | `NIM_DYNAMO_ENABLE_MULTIMODAL` | `true` | Enable Dynamo multimodal handling for image/video requests |
 | `NIM_DYNAMO_ARGS` | Empty object | Advanced Dynamo worker CLI overrides as a JSON object; use underscore keys such as `discovery_backend`, `namespace`, and `endpoint` |
@@ -341,7 +342,9 @@ processor cache. The request timeout above is separate from
 ownership does not depend on the Chat Completions affinity TTL.
 
 **WebSocket (`/v1/streaming/ws`) is unsupported in Dynamo mode**, on both shared
-frontend and worker NIM endpoints. `/v1/streaming/config` is also unavailable.
+frontend and worker NIM endpoints. The streaming adapter and enabled worker NIM
+proxy expose `GET /v1/streaming/config` and the REST session routes. The stock
+`dynamo.frontend` launcher does not attach these streaming routes.
 See [Dynamo with streaming](dynamo/dynamo_with_streaming.md) for the manifest
 and REST request examples.
 
