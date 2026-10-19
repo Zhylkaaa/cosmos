@@ -320,7 +320,8 @@ depending on reasoning or tool-call fields.
 
 ## Reasoner DFlash
 
-Edge, Nano, and Super Reasoner use their bundled DFlash speculative-decoding drafts by
+Edge Reasoner does not support DFlash in this version; set `NIM_USE_DFLASH=0`.
+Nano and Super Reasoner use their bundled DFlash speculative-decoding drafts by
 default. The request routes and payloads do not change. The task catalog's
 Super BF16 baseline explicitly sets `NIM_USE_DFLASH=0` and runs the selected
 target model without DFlash.

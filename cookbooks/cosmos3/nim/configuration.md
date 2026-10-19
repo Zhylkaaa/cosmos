@@ -39,7 +39,7 @@ GPUs. A normal deployment does not need a profile ID.
 | Name | Default | Use |
 | --- | --- | --- |
 | `NIM_MODEL_PATH` | Empty | Generator: absolute local directory. Reasoner: absolute local directory or `hf://owner/repository[:revision]` |
-| `NIM_DFLASH_MODEL_PATH` | Empty | Edge, Nano, or Super Reasoner: independently override the DFlash draft with an absolute local directory |
+| `NIM_DFLASH_MODEL_PATH` | Empty | Nano or Super Reasoner: independently override the DFlash draft with an absolute local directory |
 | `NIM_DISABLE_MODEL_DOWNLOAD` | `false` | Disable profile download for a completely local Reasoner override; incompatible with Reasoner `hf://` and rejected for Generator |
 | `HF_TOKEN` | Empty | Authenticate to a private Reasoner Hugging Face repository |
 
@@ -156,14 +156,15 @@ controls one at a time and validate memory, latency, quality, and correctness.
 
 | Name | Default | Use |
 | --- | --- | --- |
-| `NIM_USE_DFLASH` | `true` for Reasoner | Use the bundled Edge, Nano, or Super DFlash draft; set `false` to run the target model without speculative decoding |
+| `NIM_USE_DFLASH` | `true` for Nano/Super Reasoner | Use the bundled Nano or Super DFlash draft; set `false` to run the target model without speculative decoding. Set `false` for Edge |
 | `NIM_DFLASH_MODEL_PATH` | Empty | Use an independent absolute local DFlash directory containing `config.json` and `model.safetensors` |
 | `NIM_DFLASH_BF16_KV_CACHE` | `false` on Hopper; `true` otherwise | Override whether DFlash uses a BF16 KV cache instead of the profile-derived cache dtype |
 | `NIM_DFLASH_CONFIG` | Empty object | Add or override advanced vLLM DFlash speculative-configuration fields as JSON |
 
-DFlash does not change the Reasoner request API. Edge, Nano, and Super Reasoner
+DFlash does not change the Reasoner request API. Nano and Super Reasoner
 profiles include variant-specific drafts and enable them by default; Generator
-rejects an explicit DFlash enable. Confirm that the selected image contains the
+rejects an explicit DFlash enable. Edge does not support DFlash in this version;
+set `NIM_USE_DFLASH=0` for Edge. Confirm that the selected image contains the
 draft artifact. `NIM_DFLASH_MODEL_PATH` accepts only an absolute local path,
 not an `hf://` source. `NIM_DFLASH_CONFIG` requires DFlash to remain enabled and
 cannot set the reserved `method` or `model` keys.
@@ -258,10 +259,11 @@ Leave these at their defaults unless diagnosing or tuning a measured workload:
 | `NIM_STREAMING_SPEC_NUM_TOKENS` | `3` | Number of proposed tokens for the n-gram replacement; values below 1 become 1, and non-integer values fall back to 3 |
 | `NIM_STREAMING_FORCE_V1_RUNNER` | Unset | Set `1` to force the vLLM V1 model runner; otherwise leave runner selection to vLLM |
 
-The speculation controls apply only when streaming is enabled and the engine
+For Nano and Super, the speculation controls apply only when streaming is enabled and the engine
 has a DFlash speculative configuration. They do not independently enable
 speculation when `NIM_USE_DFLASH=false`. N-gram replaces DFlash because DFlash
-is currently not supported for streaming. Both V1 and V2 model runners support the
+is currently not supported for streaming. Edge runs without speculative decoding
+with `NIM_USE_DFLASH=0`. Both V1 and V2 model runners support the
 streaming path, so pinning V1 is not required for normal operation.
 
 For standalone NIM, inspect `GET /v1/streaming/config` for the served model and default retention

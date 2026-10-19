@@ -21,8 +21,9 @@ for clients that cannot maintain a WebSocket connection.
 an image with streaming support. See [Streaming video session settings](configuration.md#streaming-video-sessions)
 for enablement, capacity, and idle timeouts.
 
-For streaming, n-gram speculative decoding replaces DFlash because DFlash is
-currently not supported for streaming.
+For Nano and Super streaming, n-gram speculative decoding replaces DFlash because
+DFlash is currently not supported for streaming. Edge does not support DFlash in
+this version and runs without speculative decoding with `NIM_USE_DFLASH=0`.
 
 ## Example client
 

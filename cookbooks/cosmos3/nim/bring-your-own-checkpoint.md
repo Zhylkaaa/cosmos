@@ -18,7 +18,7 @@ preserving the Certified NIM server, profile selection, and runtime contract.
 | --- | --- | --- |
 | Generator | Absolute local directory | Server, profile, and Generator guardrail artifacts |
 | Reasoner | Absolute local directory or `hf://owner/repository[:revision]` | Server, selected runtime layout, and profile compatibility policy |
-| Edge, Nano, or Super Reasoner DFlash draft | Absolute local directory only | Primary Reasoner checkpoint, server, and profile policy |
+| Nano or Super Reasoner DFlash draft | Absolute local directory only | Primary Reasoner checkpoint, server, and profile policy |
 
 ## Generator checkpoint
 
@@ -93,11 +93,12 @@ Use the same read-only mount pattern as the Generator, but select the Reasoner:
 ```
 
 For a completely local checkpoint, `NIM_DISABLE_MODEL_DOWNLOAD=1` prevents
-profile artifact download after source resolution. Because Reasoner enables
+profile artifact download after source resolution. Because Nano and Super Reasoner enable
 DFlash by default, also provide a local draft or set `NIM_USE_DFLASH=0` for
-completely local target-only operation.
+completely local target-only operation. Edge does not support DFlash in this
+version; set `NIM_USE_DFLASH=0` for Edge.
 
-When DFlash is enabled, Edge, Nano, and Super Reasoner each need their corresponding
+When DFlash is enabled, Nano and Super Reasoner each need their corresponding
 draft artifact containing `config.json` and `model.safetensors`. The selected
 profile can provide it under the primary model workspace. A separate read-only
 local draft can be supplied through `NIM_DFLASH_MODEL_PATH`; the draft does not
@@ -193,7 +194,7 @@ the checkpoint's validation baseline.
 | Hugging Face source rejected offline | `hf://` requires download but downloads are disabled | Use an absolute pre-downloaded local path |
 | Hugging Face authorization fails | Token, repository ID, revision, network, or cache is invalid | Check `HF_TOKEN`, URI, connectivity, and writable cache without logging the token |
 | DFlash path is rejected | The draft path is relative, uses `hf://`, is not mounted, or lacks one of its two required files | Use an absolute local mount containing `config.json` and `model.safetensors` |
-| DFlash configuration is rejected | DFlash is disabled, the draft does not match the Edge/Nano/Super target, or `NIM_DFLASH_CONFIG` sets reserved `method`/`model` keys | Use the selected Reasoner's matching draft, keep DFlash enabled, and remove reserved keys; see [Speculative decoding](configuration.md#speculative-decoding) |
+| DFlash configuration is rejected | DFlash is disabled, the draft does not match the Nano/Super target, or `NIM_DFLASH_CONFIG` sets reserved `method`/`model` keys | For Nano/Super, use the selected Reasoner's matching draft, keep DFlash enabled, and remove reserved keys; Edge does not support DFlash. See [Speculative decoding](configuration.md#speculative-decoding) |
 | Metadata shows `default` | Override was omitted, rejected, or applied to another container | Inspect launch environment, mounts, startup logs, and `/v1/metadata` |
 
 For broader startup, cache, GPU, and readiness diagnosis, see

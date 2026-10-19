@@ -37,9 +37,9 @@ visible host.
 A Generator specialist rejects requests for other tasks. Confirm that
 the selected image includes the model before deployment.
 
-Edge, Nano, and Super Reasoner profiles include variant-specific DFlash drafts and use
+Nano and Super Reasoner profiles include variant-specific DFlash drafts and use
 them by default. Set `NIM_USE_DFLASH=0` to run the selected target model without
-speculative decoding. Generator does not support DFlash.
+speculative decoding. Edge Reasoner and Generator do not support DFlash in this version.
 
 ### Practical model recommendation
 
@@ -299,7 +299,7 @@ to use the shared-pool guidance above without a separate host RAM requirement.
 When both Super BF16 layouts fit, profile ranking prefers the one-GPU TP1
 layout. If TP1 does not have enough current free memory but TP2 fits on both
 participating GPUs, automatic selection can fall back to TP2. To require TP2,
-set `NIM_TAGS_SELECTOR='n_gpus=2,nim_tp=2'`. All Reasoner rows include the
+set `NIM_TAGS_SELECTOR='n_gpus=2,nim_tp=2'`. Nano and Super Reasoner rows include the
 variant-specific DFlash draft, and DFlash is enabled by default.
 
 ## Automatic profile selection

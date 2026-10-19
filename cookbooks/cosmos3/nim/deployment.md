@@ -64,9 +64,10 @@ The software defaults to `latency` when the selector is omitted.
 
 Set `NIM_MODEL_TYPE=reasoner` and choose `NIM_MODEL_VARIANT=edge`, `nano`, or `super`.
 Edge supports BF16 and FP8; it has no NVFP4 profile. Reasoner does not use
-`NIM_PERF_PROFILE`. Edge, Nano, and Super Reasoner enable their
+`NIM_PERF_PROFILE`. Edge does not support DFlash in this version; set
+`NIM_USE_DFLASH=0` for Edge. Nano and Super Reasoner enable their
 bundled DFlash speculative-decoding drafts by default. Set `NIM_USE_DFLASH=0`
-to run the selected Reasoner target model without DFlash; see
+to run Nano or Super without DFlash; see
 [Configuration](configuration.md#speculative-decoding).
 
 ### Precision selection
